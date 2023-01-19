@@ -14,7 +14,7 @@ install.pacakes ("glmmTMB")
 install.packages("blmeco")
 install.packages("AICcmodavg")
 install.packages("performance")
-
+install.packages("plyr")
 
 
 # load packages
@@ -33,7 +33,7 @@ library(showtext)
 library(blmeco)
 library(AICcmodavg)
 library(performance)
-
+library(plyr)
 
 #cite packages
 citation(package = "weathermetrics")  
@@ -118,7 +118,7 @@ csvdata2[,15]<-csvdata2[,15]+days(1)
 #check that dates are ok
 View(csvdata2)
 
-#remove columns that I created to modify your dataset
+#remove columns that I created to modify the dataset
 csvdata2[,3] <-csvdata2[,15]
 csvdata2<-csvdata2[,-c(11:15)]
 View(csvdata2)
@@ -541,4 +541,44 @@ ggplot(d, aes(Sunrise, mean)) +
   geom_errorbar(aes(ymin=mean-sd,ymax=mean+sd), position=position_dodge(width=0.5))+
   ylim(-4,15)
 
+
+
+#plot number of puffins against time since high tide (aggregated to every half hour)
+
+
+d <- Puffins_and_everything_df_wholeFrame2 %>% 
+  group_by(c( round_any(Time_since_AM_HighTide,0.5) )) %>% 
+  summarise(
+    VAR1 = mean(Number_of_puffins_in_frame),
+    VAR2=sd(Number_of_puffins_in_frame))
+
+names(d)<-c("HighTide" ,"mean","sd" )
+
+ggplot(d, aes(HighTide, mean)) +
+  geom_point() +
+  labs(x="Time since AM high tide (Hours)", y="Mean number of puffins")+
+  geom_errorbar(aes(ymin=mean-sd,ymax=mean+sd), position=position_dodge(width=0.5))+
+  ylim(-4,10) +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(colour = "black"),)
+
+
+
+#plot number of puffins against time since sunrise (aggregated to every half hour)
+
+d <- Puffins_and_everything_df_wholeFrame2 %>% 
+  group_by(c(round_any(Time_since_sunrise,0.5) )) %>% 
+  summarise(
+    VAR1 = mean(Number_of_puffins_in_frame),
+    VAR2=sd(Number_of_puffins_in_frame))
+
+names(d)<-c("Sunrise" ,"mean","sd" )
+
+ggplot(d, aes(Sunrise, mean)) +
+  geom_point() +
+  labs(x="Time since sunrise (Hours)", y="Mean number of puffins")+
+  geom_errorbar(aes(ymin=mean-sd,ymax=mean+sd), position=position_dodge(width=0.5))+
+  ylim(-4,10) +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(colour = "black"),)
 
